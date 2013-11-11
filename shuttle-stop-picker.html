@@ -1,66 +1,81 @@
+<!--
+/*
+ * Copyright 2013 The Polymer Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style
+ * license that can be found in the LICENSE file.
+ */
+-->
+
 <link rel="import" href="components/polymer-overlay/polymer-overlay.html">
 <link rel="import" href="components/polymer-selector/polymer-selector.html">
-<link rel="import" href="components/polymer-ui-menu/polymer-ui-menu.html">
 <link rel="import" href="components/polymer-ui-icon/polymer-ui-icon.html">
+<link rel="import" href="components/polymer-ui-collapsible/polymer-ui-collapsible.html">
 
-<polymer-element name="shuttle-stop-picker" extends="polymer-overlay" attributes="stops selected selectedStop focusedStop searchInputLabel">
+<polymer-element name="shuttle-stop-picker" attributes="query stops selected selectedStop focusedStop">
   <template>
-    <link rel="stylesheet" href="components/polymer-overlay/polymer-overlay.css">
     <style>
-      @host {
-        * {
-          position: relative;
-          background: white;
-        }
+      #stops {
+        display: block;
+        height: 100%;
+        overflow: hidden;
       }
       
-      #searchBox {
-        position: relative;
-        height: 60px;
-        border-bottom: 1px solid #ccc;
+      .stops-list {
+        display: none;
       }
       
-      #searchBox > input {
-        position: absolute;
+      .stops-list.polymer-selected {
+        display: block;
+      }
+      
+      .folder {
+        height: 40px;
+        line-height: 40px;
         box-sizing: border-box;
         -moz-box-sizing: border-box;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0 14px;
-        border: 0;
-        font-size: 16px;
-        outline: none;
-      }
-      
-      #stops {
-        position: absolute;
-        top: 61px;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-      
-      .group {
-        height: 29px;
-        line-height: 29px;
-        padding-left: 20px;
-        border-bottom: 1px solid #ccc;
-        background: #eee;
-        color: #8f8f8f;
+        padding-left: 16px;
         font-size: 12px;
+        color: #888;
+        font-weight: 500;
+        border-bottom: 1px solid #ddd;
+      }
+      
+      .group-header {
+        height: 50px;
+        line-height: 50px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        padding-left: 4px;
+        font-size: 14px;
         font-weight: bold;
+        border-bottom: 1px solid #ddd;
+      }
+      
+      polymer-ui-icon-button[icon=dropdown]:not(.active) {
+        -webkit-transform: rotate(270deg);
+        transform: rotate(270deg);
       }
       
       .stop {
-        height: 59px;
-        line-height: 59px;
-        padding-left: 20px;
-        border-bottom: 1px solid #ccc;
+        position: relative;
+        height: 45px;
+        line-height: 45px;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        padding-left: 48px;
+        font-size: 14px;
+        font-weight: bold;
+      }
+      
+      .stop:last-child {
+        border-bottom: 1px solid #ddd;
+      }
+      
+      .stop.filtered {
+        height: 50px;
+        line-height: 50px;
+        padding-left: 18px;
+        border-bottom: 1px solid #ddd;
       }
       
       .stop[focused] {
@@ -69,116 +84,138 @@
       
       .stop-label {
         display: inline-block;
-        width: 85%;
+        width: 95%;
         vertical-align: middle;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        font-size: 14px;
-        font-weight: bold;
       }
       
       .check-icon {
         visibility: hidden;
+        position: absolute;
+        top: 12px;
+        left: 16px;
       }
       
-      .polymer-selected .check-icon {
+      .polymer-selected > .check-icon {
         visibility: visible;
+      }
+      
+      [hidden] {
+        display: none;
       }
     </style>
     
     <polymer-selector id="selector" target="{{$.stops}}" itemsSelector=".stop" 
         valueattr="name" selected="{{selected}}" selectedItem="{{selectedItem}}"
-        selectedModel="{{selectedStop}}" on-polymer-activate="{{toggleAction}}"></polymer-selector>
+        selectedModel="{{selectedStop}}" on-polymer-activate="{{closeAction}}"></polymer-selector>
     
-    <div id="searchBox">
-      <input id="input" x-webkit-speech placeholder="{{searchInputLabel}}" on-input="{{asyncSearch}}">
-    </div>
-    
-    <div id="stops">
-      <template repeat="{{groups}}">
-        <template if="{{stops}}">
-          <div class="group" hidden?="{{hidden}}">{{name}}</div>
+    <polymer-selector id="stops" selected="{{mode}}" touch-action="pan-y" on-pointerdown="{{hideKeyboard}}">
+      <div class="stops-list">
+        <template repeat="{{folders}}">
+          <template if="{{groups.length}}">
+            <div class="folder">{{name}}</div>
+          </template>
+          <template repeat="{{groups}}">
+            <polymer-ui-collapsible active="{{active}}" class="group">
+              <div class="polymer-ui-collapsible-header group-header">
+                <polymer-ui-icon-button icon="dropdown" src="assets/ic_arrow_triangledown_darkreg.png" class="{{{active: active} | tokenList}}"></polymer-ui-icon-button>
+                {{name}}
+              </div>
+              <template repeat="{{stops}}">
+                <div class="stop" name="{{name}}" focused?="{{focused}}">
+                  <polymer-ui-icon class="check-icon" src="assets/ic_check_darkreg.png"></polymer-ui-icon>
+                  <div class="stop-label">{{name}}</div>
+                </div>
+              </template>
+            </polymer-ui-collapsible>
+          </template>
         </template>
-        <template repeat="{{stops}}">
-          <div class="stop" name="{{name}}" hidden?="{{hidden}}" focused?="{{focused}}">
-            <div class="stop-label">{{name}}</div>
-            <polymer-ui-icon class="check-icon" src="assets/ic_check_darkreg.png"></polymer-ui-icon>
-          </div>
+      </div>
+      <div class="stops-list">
+        <template repeat="{{groups}}">
+          <template repeat="{{stops}}">
+            <div class="stop filtered" name="{{name}}" hidden?="{{hidden}}" focused?="{{focused}}">
+              <polymer-ui-icon class="check-icon" src="assets/ic_check_darkreg.png"></polymer-ui-icon>
+              <div class="stop-label">{{name}}</div>
+            </div>
+          </template>
         </template>
-      </template>
-    </div>
+      </div>
+    </polymer-selector>
   </template>
   <script>
     Polymer('shuttle-stop-picker', {
-      /* speed up overlay's open/close speed */
-      timeout: 0,
-      autoCloseDisabled: true,
-      searchInputLabel: 'Search Stops',
-      ready: function() {
-        this.target = this;
-      },
-      openedChanged: function() {
-        this.super(arguments);
-        if (this.opened) {
-          this.$.input.value = '';
-          this.search();
-          if (this.selectedItem) {
-            this.asyncMethod(function() {
-              this.scrollToNode(this.selectedItem);
-              }, null, 1);
-          }
+      query: '',
+      mode: 0,
+      update: function() {
+        this.query = '';
+        this.search();
+        if (this.selectedItem) {
+          this.scrollToStop(this.selectedItem);
         }
       },
-      scrollToNode: function(node) {
-        node.scrollIntoViewIfNeeded ? node.scrollIntoViewIfNeeded() : 
-            node.scrollIntoView();
+      scrollToStop: function(stop) {
+        stop.parentNode.active = true;
+        this.async(function() {
+          stop.scrollIntoViewIfNeeded ? stop.scrollIntoViewIfNeeded() : 
+              stop.scrollIntoView();
+        }, null, 500);
       },
-      toggleAction: function() {
-        this.async('toggle');
+      closeAction: function() {
+        this.fire('shuttle-picker-close');
       },
       stopsChanged: function() {
-        this.groups = [];
+        var remote = [], office = [];
         this.stops.forEach(function(s) {
-          var g = this.groups[s.group];
+          var groups = s.is_work ? office : remote; 
+          var g = groups[s.group];
           if (!g) {
-            g = this.groups[s.group] = {
-              name: Shuttle.groups[s.group].name, 
+            g = groups[s.group] = {
+              name: Shuttle.groups[s.group].name,
               stops: []
             };
           }
           g.stops.push(s);
         }, this);
-        this.search();
+        this.folders = [
+          {name: Shuttle.officeLabel || 'Google', groups: office}, 
+          {name: 'Remote', groups: remote}
+        ];
+        this.groups = office.concat(remote);
       },
       focusedStopChanged: function(old) {
         if (old) {
           old.focused = false;
         }
-        if (this.opened && this.focusedStop) {
+        if (this.focusedStop) {
           this.focusedStop.focused = true;
           var n = this.$.stops.querySelector(
               '[name="' + this.focusedStop.name + '"]');
-          this.scrollToNode(n);
+          this.scrollToStop(n);
         }
+      },
+      queryChanged: function() {
+        this.mode = this.query ? 1 : 0;
+        this.asyncSearch();
       },
       asyncSearch: function() {
         this.searchJob = this.job(this.searchJob, this.search, 300);
       },
       search: function() {
-        var q = this.$.input.value.toLowerCase();
+        var q = this.query && this.query.toLowerCase();
         this.groups.forEach(function(g) {
           var t = g.stops.length;
           var gh = g.name.toLowerCase().indexOf(q) < 0;
           g.stops.forEach(function(s) {
             s.hidden = s.name.toLowerCase().indexOf(q) < 0 && gh;
-            if (s.hidden) {
-              t--;
-            }
           });
-          g.hidden = !t;
         });
         this.fire('shuttle-stops-search');
+      },
+      hideKeyboard: function() {
+        document.activeElement.blur();
       }
     });
   </script>
