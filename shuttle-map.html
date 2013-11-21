@@ -15,6 +15,7 @@
       @host {
         * {
           display: block;
+          position: relative;
         }
       }
       
@@ -22,9 +23,31 @@
         display: block;
         height: 100%;
       }
+      
+      #locationIcon {
+        position: absolute;
+        right: 12px;
+        bottom: 24px;
+        border-radius: 50%;
+        padding: 4px;
+        border: 1px solid #4285f4;
+      }
+      
+      #locationIcon.tracking {
+        background-color: lightblue;
+        -webkit-animation: zoom 1s ease infinite;
+        animation: zoom 1s ease infinite;
+      }
+      
+      @-webkit-keyframes zoom {
+        0% {-webkit-transform: scale(1);}
+        50% {-webkit-transform: scale(0.8);}
+        100% {-webkit-transform: scale(1);}
+      }
     </style>
     
     <google-map id="map" map="{{map}}"></google-map>
+    <polymer-ui-icon id="locationIcon" src="assets/ic_location_blue" on-tap="{{currentLocation}}"></polymer-ui-icon>
     <google-map-directions id="directions" map="{{map}}"></google-map-directions>
   </template>
   <script>
@@ -91,6 +114,24 @@
             this.fromStop.in_lat, this.fromStop.in_lon);
         this.$.directions.endLocation = new google.maps.LatLng(
             this.toStop.in_lat, this.toStop.in_lon);
+      },
+      currentLocation: function() {
+        this.$.locationIcon.classList.add('tracking');
+        navigator.geolocation.getCurrentPosition(function(p) {
+          this.$.locationIcon.classList.remove('tracking');
+          if (!this.currLocMarker) {
+            this.currLocMarker = new google.maps.Marker({
+              map: this.map,
+              icon: this.resolvePath('assets/ic_place_blue.png')
+            });
+          }
+          var p = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+          this.currLocMarker.setPosition(p);
+          this.map.setCenter(p);
+          this.map.setZoom(14);
+        }.bind(this), function() {
+          this.$.locationIcon.classList.remove('tracking');
+        }.bind(this));
       }
     });
   </script>
