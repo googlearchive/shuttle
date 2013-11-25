@@ -47,7 +47,7 @@
     </style>
     
     <google-map id="map" map="{{map}}"></google-map>
-    <polymer-ui-icon id="locationIcon" src="assets/ic_location_blue" on-tap="{{currentLocation}}"></polymer-ui-icon>
+    <!-- <polymer-ui-icon id="locationIcon" src="assets/ic_location_blue" on-tap="{{currentLocation}}"></polymer-ui-icon> -->
     <google-map-directions id="directions" map="{{map}}"></google-map-directions>
   </template>
   <script>
@@ -91,6 +91,7 @@
             icon: this.resolvePath('assets/marker_grey.png'),
             zIndex: 0
           });
+          marker.stop = s;
           this.markers.push(marker);
           google.maps.event.addListener(marker, 'click', 
               this.selectStop.bind(this, s));
@@ -114,6 +115,20 @@
             this.fromStop.in_lat, this.fromStop.in_lon);
         this.$.directions.endLocation = new google.maps.LatLng(
             this.toStop.in_lat, this.toStop.in_lon);
+      },
+      findNearestStop: function() {
+        navigator.geolocation.getCurrentPosition(function(p) {
+          var c = new google.maps.LatLng(p.coords.latitude, p.coords.longitude);
+          var d0, s;
+          this.markers && this.markers.forEach(function(m) {
+            var d = google.maps.geometry.spherical.computeDistanceBetween(c, m.getPosition());
+            if (!s || d < d0) {
+              d0 = d;
+              s = m.stop;
+            }
+          });
+          this.fire('shuttle-nearest-stop', {stop: s});
+        }.bind(this));
       },
       currentLocation: function() {
         this.$.locationIcon.classList.add('tracking');

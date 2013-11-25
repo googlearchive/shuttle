@@ -32,6 +32,31 @@
         line-height: 81px;
         text-align: center;
       }
+      
+      .location-icon {
+        display: none !important;
+      }
+      
+      :host(.tracking.from) .location-icon.from, input:focus + .location-icon {
+        display: inline-block !important;
+      }
+      
+      :host(.tracking.to) .location-icon.to, input:focus + .location-icon {
+        display: inline-block !important;
+      }
+      
+      :host(.tracking) .location-icon {
+        background-color: lightblue;
+        border-radius: 50%;
+        -webkit-animation: zoom 1s ease infinite;
+        animation: zoom 1s ease infinite;
+      }
+      
+      @-webkit-keyframes zoom {
+        0% {-webkit-transform: scale(1);}
+        50% {-webkit-transform: scale(1.4);}
+        100% {-webkit-transform: scale(1);}
+      }
     </style>
 
     <polymer-flex-layout></polymer-flex-layout>
@@ -40,10 +65,12 @@
       <polymer-ui-field class="from">
         <polymer-ui-icon src="assets/ic_start_a_green.png"></polymer-ui-icon>
         <input id="fromInput" flex placeholder="Start" value="{{fromQuery}}">
+        <polymer-ui-icon id="from" class="location-icon from" src="assets/ic_location_blue.png" on-pointerdown="{{nearestStop}}"></polymer-ui-icon>
       </polymer-ui-field>
       <polymer-ui-field>
         <polymer-ui-icon src="assets/ic_stop_b_red.png"></polymer-ui-icon>
         <input id="toInput" flex placeholder="Stop" value="{{toQuery}}">
+        <polymer-ui-icon class="location-icon to" src="assets/ic_location_blue.png" on-pointerdown="{{nearestStop}}"></polymer-ui-icon>
       </polymer-ui-field>
     </div>
     <div class="swap-button-container">
@@ -71,6 +98,9 @@
       },
       swap: function() {
         this.fire('shuttle-inputs-swap')
+      },
+      nearestStop: function(e, detail, sender) {
+        this.fire('shuttle-input-nearest', {isFrom: sender.id === 'from'});
       }
     });
   </script>
