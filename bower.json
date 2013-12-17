@@ -16,6 +16,6 @@
     "polymer-flex-layout": "Polymer/polymer-flex-layout#master",
     "polymer-overlay": "Polymer/polymer-overlay#master",
     "polymer-ui-collapsible": "Polymer/polymer-ui-collapsible#master",
-    "polymer-ui-base-css": "Polymer/polymer-ui-base-css#master"
+    "polymer-ui-base": "Polymer/polymer-ui-base#master"
   }
 }
