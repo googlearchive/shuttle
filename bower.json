@@ -15,6 +15,7 @@
     "google-map": "Polymer/google-map#master",
     "polymer-flex-layout": "Polymer/polymer-flex-layout#master",
     "polymer-overlay": "Polymer/polymer-overlay#master",
-    "polymer-ui-collapsible": "Polymer/polymer-ui-collapsible#master"
+    "polymer-ui-collapsible": "Polymer/polymer-ui-collapsible#master",
+    "polymer-ui-base-css": "Polymer/polymer-ui-base-css#master"
   }
 }
