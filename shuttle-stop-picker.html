@@ -150,7 +150,7 @@
       query: '',
       mode: 0,
       update: function() {
-        this.query = '';
+        this.showAll = true;
         this.search();
         if (this.selectedItem) {
           this.scrollToStop(this.selectedItem);
@@ -197,6 +197,7 @@
         }
       },
       queryChanged: function() {
+        this.showAll = false;
         this.mode = this.query ? 1 : 0;
         this.asyncSearch();
       },
@@ -209,9 +210,10 @@
           var t = g.stops.length;
           var gh = g.name.toLowerCase().indexOf(q) < 0;
           g.stops.forEach(function(s) {
-            s.hidden = s.name.toLowerCase().indexOf(q) < 0 && gh;
-          });
-        });
+            s.hidden = !this.showAll && 
+                s.name.toLowerCase().indexOf(q) < 0 && gh;
+          }.bind(this));
+        }.bind(this));
         this.fire('shuttle-stops-search');
       },
       hideKeyboard: function() {
