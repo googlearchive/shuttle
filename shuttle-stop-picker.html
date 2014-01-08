@@ -198,20 +198,19 @@
       },
       queryChanged: function() {
         this.showAll = false;
-        this.mode = this.query ? 1 : 0;
         this.asyncSearch();
       },
       asyncSearch: function() {
         this.searchJob = this.job(this.searchJob, this.search, 300);
       },
       search: function() {
-        var q = this.query && this.query.toLowerCase();
+        var q = this.showAll ? '' : (this.query && this.query.toLowerCase());
+        this.mode = q ? 1 : 0;
         this.groups.forEach(function(g) {
           var t = g.stops.length;
           var gh = g.name.toLowerCase().indexOf(q) < 0;
           g.stops.forEach(function(s) {
-            s.hidden = !this.showAll && 
-                s.name.toLowerCase().indexOf(q) < 0 && gh;
+            s.hidden = s.name.toLowerCase().indexOf(q) < 0 && gh;
           }.bind(this));
         }.bind(this));
         this.fire('shuttle-stops-search');
